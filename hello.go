@@ -5,9 +5,12 @@ import (
   "net/http"
   "net"
   "os" 
+  "log"
   "io/ioutil"
   "strings"
   "github.com/oschwald/geoip2-golang"
+  "github.com/kelseyhightower/envconfig"
+  "time"
 )
 
 const (
@@ -18,8 +21,19 @@ const (
 var (
   LocalIP = GetLocalIP()
   ExternalIP = GetExternalIP() 
-  GeoLocation = GetGeoLocation(ExternalIP) 
+  GeoLocation = GetGeoLocation(ExternalIP)
+  CrashAppCounter = 0
 )
+
+type Specification struct {
+    DisplayExternalIP bool `default:"False"`
+    DisplayGeoLocation bool `default:"False"`
+    CrashApp bool `default:"False"`
+    CrashAppCount int `default:"5"`
+    Debug bool `default:"False"`
+    SimulateReady bool `default:"False"`
+    WaitBeforeReady int `default:"30"`
+}
 
 func GetLocalIP() string {
     addrs, err := net.InterfaceAddrs()
@@ -68,20 +82,59 @@ func GetExternalIP() string {
   return strings.TrimSpace(string(body[:]))
 }
 
-func HelloWorld(w http.ResponseWriter, r *http.Request) {  
+func HelloWorld(w http.ResponseWriter, r *http.Request, DisplayExternalIP bool, DisplayGeoLocation bool) {  
   fmt.Fprintf(w, "Hello, world! version: %s ", version)
   fmt.Fprintf(w, "Local IP: %s \n", LocalIP)
-  if os.Getenv("HELLOWORLD_DISPLAYEXTERNALIP") !="" { fmt.Fprintf(w, "External IP: %s \n", ExternalIP) }
-  if os.Getenv("HELLOWORLD_DISPLAYGEOLOCATION") !="" { fmt.Fprintf(w, "Location: %s \n", GeoLocation) } 
+  if DisplayExternalIP ==true { fmt.Fprintf(w, "External IP: %s \n", ExternalIP)}
+  if DisplayGeoLocation ==true { fmt.Fprintf(w, "Location: %s \n", GeoLocation) } 
+  CrashAppCounter = CrashAppCounter + 1
+}
+
+func healthz(w http.ResponseWriter, r *http.Request, CrashApp bool, CrashAppCount int) {
+  if CrashApp ==true && CrashAppCounter >= CrashAppCount {
+    // do nothing
+  } else {
+    w.Write([]byte("OK"))
+  }
+}
+
+func readiness(w http.ResponseWriter, r *http.Request, SimulateReady bool, WaitBeforeReady int) {
+  if SimulateReady ==true {
+    time.Sleep(time.Duration(WaitBeforeReady)*time.Second)
+    } 
+  w.Write([]byte("OK"))
 }
 
 func main() {
-  GetExternalIP()
   
+  var s Specification
+  err := envconfig.Process("HelloWorld", &s)
+  if err != nil {
+    log.Fatal(err.Error())
+  }
+
+  if s.Debug ==true {
+    format := "DisplayExternalIP: %v\nDisplayGeoLocation: %v\nCrashApp: %v\nCrashAppCount: %v\n"
+    _, err = fmt.Printf(format, s.DisplayExternalIP, s.DisplayGeoLocation, s.CrashApp, s.CrashAppCount)
+  }
+
   fmt.Printf("Started Application version: %s \n", version)
   fmt.Printf("Local IP: %s \n", LocalIP)  
-  if os.Getenv("HELLOWORLD_DISPLAYEXTERNALIP") !="" { fmt.Printf("External IP: %s \n", ExternalIP) }
-  if os.Getenv("HELLOWORLD_DISPLAYGEOLOCATION") !="" { fmt.Printf("Location: %s \n", GeoLocation) } 
-  http.HandleFunc("/", HelloWorld)
-  http.ListenAndServe(port, nil)  
+  if s.DisplayExternalIP ==true { fmt.Printf("External IP: %s \n", ExternalIP) }
+  if s.DisplayGeoLocation ==true { fmt.Printf("Location: %s \n", GeoLocation) } 
+ 
+  http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    HelloWorld(w, r, s.DisplayExternalIP, s.DisplayGeoLocation)
+  })
+  
+  http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+    healthz(w, r, s.CrashApp, s.CrashAppCount)
+  })
+
+  http.HandleFunc("/readiness", func(w http.ResponseWriter, r *http.Request) {
+    readiness(w, r, s.SimulateReady, s.WaitBeforeReady)
+  })
+
+  http.ListenAndServe(port, nil)   
+
 }
