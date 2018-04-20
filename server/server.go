@@ -3,15 +3,16 @@
 package main
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"log"
 	"net/http"
-	"github.com/rakyll/statik/fs"
+
 	_ "github.com/alekssaul/golang_helloworld/server/statik"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/rakyll/statik/fs"
 )
 
 const (
-	version     = "3.1"
+	version = "3.1"
 )
 
 var (
@@ -19,8 +20,8 @@ var (
 )
 
 type EnvVars struct {
-	DisplayExternalIP  bool   `default:"False"`
-	DisplayGeoLocation bool   `default:"False"`
+	DisplayExternalIP  bool   `default:"True"`
+	DisplayGeoLocation bool   `default:"True"`
 	CrashAppCount      int    `default:"5"`
 	SimulateReady      bool   `default:"False"`
 	WaitBeforeReady    int    `default:"30"`
@@ -31,13 +32,13 @@ type Machine struct {
 	ExternalIP  string
 	LocalIP     string
 	GeoLocation local
-	version	string
+	version     string
 }
 
-type local struct{
-	State string
-	Country string
-	Latitude float64
+type local struct {
+	State     string
+	Country   string
+	Latitude  float64
 	Longitude float64
 }
 
@@ -56,12 +57,12 @@ func main() {
 	}
 
 	http.HandleFunc("/kill", func(w http.ResponseWriter, r *http.Request) {
-		KillServer(w, r,  env.CrashAppCount)
+		KillServer(w, r, env.CrashAppCount)
 	})
 
 	log.Printf("- Running with Flags - \nDISPLAYEXTERNALIP: %v\nDISPLAYGEOLOCATION: %v\nCrashAppCount: %v\nPort: %v\n",
 		env.DisplayExternalIP, env.DisplayGeoLocation, env.CrashAppCount, env.Port)
-	
+
 	machine.version = version
 	log.Printf("Started Application version: %s \n", machine.version)
 	machine.LocalIP = GetLocalIP()
@@ -89,7 +90,7 @@ func main() {
 	}
 
 	http.Handle("/", http.StripPrefix("/", http.FileServer(statikFS)))
-	
+
 	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		MainApi(w, r, env, machine)
 	})
