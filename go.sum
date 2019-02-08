@@ -1,0 +1,10 @@
+github.com/kelseyhightower/envconfig v1.3.0 h1:IvRS4f2VcIQy6j4ORGIf9145T/AsUB+oY8LyvN8BXNM=
+github.com/kelseyhightower/envconfig v1.3.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
+github.com/oschwald/geoip2-golang v1.1.0 h1:ACVPz5YqH4/jZkQdsp/PZc9shQVZmreCzAVNss5y3bo=
+github.com/oschwald/geoip2-golang v1.1.0/go.mod h1:0LTTzix/Ao1uMvOhAV4iLU0Lz7eCrP94qZWBTDKf0iE=
+github.com/oschwald/maxminddb-golang v0.0.0-20170901134056-26fe5ace1c70 h1:XGLYUmodtNzThosQ8GkMvj9TiIB/uWsP8NfxKSa3aDc=
+github.com/oschwald/maxminddb-golang v0.0.0-20170901134056-26fe5ace1c70/go.mod h1:3jhIUymTJ5VREKyIhWm66LJiQt04F0UCDdodShpjWsY=
+github.com/rakyll/statik v0.0.0-20170921043801-016ca6fdb1b2 h1:SaJKGKdxlWThS/OzjY5gnsozKr4KKy+MdOvFM5pd5Vc=
+github.com/rakyll/statik v0.0.0-20170921043801-016ca6fdb1b2/go.mod h1:OEi9wJV/fMUAGx1eNjq75DKDsJVuEv1U0oYdX6GX8Zs=
+golang.org/x/sys v0.0.0-20170201051245-7a6e5648d140 h1:wxED/WNVMni7c0XHQ2hO7hXtwxskOTX5+iGd53LdZO0=
+golang.org/x/sys v0.0.0-20170201051245-7a6e5648d140/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
